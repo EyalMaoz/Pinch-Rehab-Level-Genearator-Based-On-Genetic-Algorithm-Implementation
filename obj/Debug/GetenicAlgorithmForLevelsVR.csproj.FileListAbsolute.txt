@@ -1,0 +1,7 @@
+C:\Users\eyalv\source\repos\GetenicAlgorithmForLevelsVR\GetenicAlgorithmForLevelsVR\bin\Debug\GetenicAlgorithmForLevelsVR.exe.config
+C:\Users\eyalv\source\repos\GetenicAlgorithmForLevelsVR\GetenicAlgorithmForLevelsVR\bin\Debug\GetenicAlgorithmForLevelsVR.exe
+C:\Users\eyalv\source\repos\GetenicAlgorithmForLevelsVR\GetenicAlgorithmForLevelsVR\bin\Debug\GetenicAlgorithmForLevelsVR.pdb
+C:\Users\eyalv\source\repos\GetenicAlgorithmForLevelsVR\GetenicAlgorithmForLevelsVR\obj\Debug\GetenicAlgorithmForLevelsVR.csprojAssemblyReference.cache
+C:\Users\eyalv\source\repos\GetenicAlgorithmForLevelsVR\GetenicAlgorithmForLevelsVR\obj\Debug\GetenicAlgorithmForLevelsVR.csproj.CoreCompileInputs.cache
+C:\Users\eyalv\source\repos\GetenicAlgorithmForLevelsVR\GetenicAlgorithmForLevelsVR\obj\Debug\GetenicAlgorithmForLevelsVR.exe
+C:\Users\eyalv\source\repos\GetenicAlgorithmForLevelsVR\GetenicAlgorithmForLevelsVR\obj\Debug\GetenicAlgorithmForLevelsVR.pdb

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GetenicAlgorithmForLevelsVR
 {
@@ -18,17 +16,17 @@ namespace GetenicAlgorithmForLevelsVR
         public const int dpP3 = 3;
         public const int dpL2 = 5;
 
-        public enum ActionType
+        public enum PinchType
         {
             T2 = 0, T3 = 1, P2 = 2, P3 = 3, L2 = 4
         }
 
         public class Action
         {
-            public ActionType Type;
+            public PinchType Type;
             public int DifficultyLevel;// dm
             public int DifficultyPerPlayer;// dp
-            public Action(ActionType t, int dp, int diffScore = -1)
+            public Action(PinchType t, int dp, int diffScore = -1)
             {
                 Type = t;
                 DifficultyPerPlayer = dp;
@@ -42,10 +40,11 @@ namespace GetenicAlgorithmForLevelsVR
             public List<Action> ActionsList = null;
             public string Name;
             public Challenge Source = null;
+            public float LF = 0f;
 
             private int version = 1;
 
-            public Challenge(List<Action> Actions = null, string n = "Challenge")
+            public Challenge(string n, List<Action> Actions = null)
             {
                 if (Actions == null)
                 {
@@ -64,6 +63,7 @@ namespace GetenicAlgorithmForLevelsVR
                 }
                 version = original.version + 1;
                 Name = original.Name;
+                LF = original.LF;
                 if (original.Source == null)
                 {
                     this.Source = original;
@@ -74,9 +74,9 @@ namespace GetenicAlgorithmForLevelsVR
                 }
             }
 
-            public int GetChallengeDifficulty()
+            public float GetChallengeDifficulty()
             {
-                int answer = 0;
+                float answer = 0;
                 foreach (Action action in ActionsList)
                 {
                     answer += action.DifficultyLevel + action.DifficultyPerPlayer;
@@ -104,26 +104,26 @@ namespace GetenicAlgorithmForLevelsVR
 
             public void AddRandomAction(int Difficulty = -1)
             {
-                ActionType newActType = (ActionType)(Program.RandGenerator.Next(0, 4 + 1));
+                PinchType newActType = (PinchType)(Program.RandGenerator.Next(0, 4 + 1));
                 if (Difficulty == -1)
                 {
                     Difficulty = Program.RandGenerator.Next(_DifficultyMin, _DifficultyMax + 1);
                 }
                 switch (newActType)
                 {
-                    case ActionType.T2:
+                    case PinchType.T2:
                         ActionsList.Add(new Action(newActType, dpT2, Difficulty));
                         break;
-                    case ActionType.P2:
+                    case PinchType.P2:
                         ActionsList.Add(new Action(newActType, dpP2, Difficulty));
                         break;
-                    case ActionType.T3:
+                    case PinchType.T3:
                         ActionsList.Add(new Action(newActType, dpT3, Difficulty));
                         break;
-                    case ActionType.P3:
+                    case PinchType.P3:
                         ActionsList.Add(new Action(newActType, dpP3, Difficulty));
                         break;
-                    case ActionType.L2:
+                    case PinchType.L2:
                         ActionsList.Add(new Action(newActType, dpL2, Difficulty));
                         break;
                 }
@@ -133,9 +133,9 @@ namespace GetenicAlgorithmForLevelsVR
             {
                 for (int i = ActionsList.Count - 1; i >= 0; i--)
                 {
-                    if (ActionsList[i].DifficultyLevel != _DifficultyMin)
+                    if (ActionsList[i].DifficultyLevel > _DifficultyMin)
                     {
-                        ActionsList[i].DifficultyLevel--;
+                        ActionsList[i].DifficultyLevel -= 1;
                         return true;
                     }
                 }
@@ -146,9 +146,9 @@ namespace GetenicAlgorithmForLevelsVR
             {
                 for (int i = ActionsList.Count - 1; i >= 0; i--)
                 {
-                    if (ActionsList[i].DifficultyLevel != _DifficultyMax)
+                    if (ActionsList[i].DifficultyLevel < _DifficultyMax)
                     {
-                        ActionsList[i].DifficultyLevel++;
+                        ActionsList[i].DifficultyLevel += 1;
                         return true;
                     }
                 }
@@ -165,24 +165,24 @@ namespace GetenicAlgorithmForLevelsVR
                 }
 
                 ActionsList.RemoveAt(actionIndex);
-                ActionType newActType = (ActionType)newActionIndex;
+                PinchType newActType = (PinchType)newActionIndex;
                 int Difficulty = Program.RandGenerator.Next(_DifficultyMin, _DifficultyMax + 1);
 
                 switch (newActType)
                 {
-                    case ActionType.T2:
+                    case PinchType.T2:
                         ActionsList.Add(new Action(newActType, dpT2, Difficulty));
                         break;
-                    case ActionType.P2:
+                    case PinchType.P2:
                         ActionsList.Add(new Action(newActType, dpP2, Difficulty));
                         break;
-                    case ActionType.T3:
+                    case PinchType.T3:
                         ActionsList.Add(new Action(newActType, dpT3, Difficulty));
                         break;
-                    case ActionType.P3:
+                    case PinchType.P3:
                         ActionsList.Add(new Action(newActType, dpP3, Difficulty));
                         break;
-                    case ActionType.L2:
+                    case PinchType.L2:
                         ActionsList.Add(new Action(newActType, dpL2, Difficulty));
                         break;
                 }
@@ -193,7 +193,6 @@ namespace GetenicAlgorithmForLevelsVR
         {
             const float CL = 1f;// Coefficient of Learning
             const long StuckRefreshMaxCount = 3;// Coefficient of Learning
-            static float LF = 0f;
             static long stuckCounter = 0;
 
             public static Challenge CreateNewChallenge(Challenge original, int PT, int ST)
@@ -218,18 +217,18 @@ namespace GetenicAlgorithmForLevelsVR
                         }
                         else
                         {
-                            newChal.LowerDifficulty();
-                            //if (!newChal.LowerDifficulty())
-                            //{// All the actions are at the minimum difficulty
-                            //    newChal.AddRandomAction(_DifficultyMin);
-                            //}
+                            //newChal.LowerDifficulty();
+                            if (!newChal.LowerDifficulty())
+                            {// All the actions are at the minimum difficulty
+                                newChal.AddRandomAction(_DifficultyMin);
+                            }
                         }
                     }
 
-                    int Hdif = newChal.GetChallengeDifficulty() - original.GetChallengeDifficulty();
-                    LF = CL * CR;
+                    float Hdif = newChal.GetChallengeDifficulty() - original.GetChallengeDifficulty();
+                    newChal.LF = CL * CR;
 
-                    if (Hdif < LF)
+                    if (Hdif < newChal.LF)
                     {
                         if (!newChal.HigherDifficulty())
                         {
@@ -240,7 +239,7 @@ namespace GetenicAlgorithmForLevelsVR
                         //shouldCheckCR = true;
                         //continue;
                     }
-                    else if (Hdif > LF)
+                    else if (Hdif > newChal.LF)
                     {
                         if (!newChal.LowerDifficulty())
                         {
@@ -254,16 +253,17 @@ namespace GetenicAlgorithmForLevelsVR
                         }
                         else shouldCheckCR = false;
                     }
-                    else if (Hdif == LF) break;
+                    else if (Hdif == newChal.LF) break;
                 }
+                //newChal.LF /= 10;
                 return newChal;
             }
 
             public static List<Challenge> SinglePointCrossover(Challenge c1, Challenge c2)
             {
                 int crossPoint = (Program.RandGenerator.Next(1, Math.Min(c1.ActionsList.Count, c2.ActionsList.Count)));
-                Challenge offspring1 = new Challenge();
-                Challenge offspring2 = new Challenge();
+                Challenge offspring1 = new Challenge(c1.Name);
+                Challenge offspring2 = new Challenge(c2.Name);
 
                 for (int i = 0; i < crossPoint; i++)
                 {
@@ -288,21 +288,29 @@ namespace GetenicAlgorithmForLevelsVR
             public static List<Challenge> SelectChromForNextLevel(List<Challenge> chromosomePool)
             {
                 List<Challenge> theChosenOnes = new List<Challenge>();
-                int min = 200;
-                int minIndex = 0;
-                int minIndex2 = 0;
+                Dictionary<float, Challenge> challengeDictionary = new Dictionary<float, Challenge>();
+                float maxDifficulty = 0;
+                for (int i = 0; i < chromosomePool.Count; i++)
+                {
+                    if (chromosomePool[i].GetChallengeDifficulty() > maxDifficulty)
+                        maxDifficulty = chromosomePool[i].GetChallengeDifficulty();
+                }
 
                 for (int i = 0; i < chromosomePool.Count; i++)
                 {
-                    if (Math.Abs(chromosomePool[i].GetChallengeDifficulty() - LF) < min)
-                    {
-                        minIndex2 = minIndex;
-                        minIndex = i;
-                        min = (int)Math.Abs(chromosomePool[i].GetChallengeDifficulty() - LF);
-                    }
+                    float diff = Math.Abs(chromosomePool[i].GetChallengeDifficulty() / maxDifficulty - chromosomePool[i].LF / 10);
+                    while (challengeDictionary.ContainsKey(diff)) diff += 0.0001f;
+                    challengeDictionary.Add(Math.Abs(diff), chromosomePool[i]);
                 }
-                theChosenOnes.Add(chromosomePool[minIndex]);
-                theChosenOnes.Add(chromosomePool[minIndex2]);
+
+                var l = challengeDictionary.OrderBy(key => key.Key);
+                var sortedDictionary = l.ToDictionary((keyItem) => keyItem.Key, (valueItem) => valueItem.Value);
+
+                for (int i = 0; i < challengeDictionary.Count / 2; i++)
+                {
+                    theChosenOnes.Add(sortedDictionary.ElementAt(i).Value);
+                }
+
                 return theChosenOnes;
             }
         }
@@ -311,57 +319,78 @@ namespace GetenicAlgorithmForLevelsVR
         {
             long counter = 1;
             // Creating Challenges:
-            Challenge Challenge1 = new Challenge(new List<Action>()
+            Challenge Challenge1 = new Challenge("Challenge1", new List<Action>()
             {
-                new Action(ActionType.T2, dpT2,2),
-                new Action(ActionType.P2, dpP2,2),
-                new Action(ActionType.T2, dpT2,4),
-                new Action(ActionType.L2, dpL2,1)
-            }, "Challenge1");
+                new Action(PinchType.T2, dpT2),
+                new Action(PinchType.T2, dpT2)
 
-            Challenge Challenge2 = new Challenge(new List<Action>()
+            });
+
+            Challenge Challenge2 = new Challenge("Challenge2", new List<Action>()
             {
-                new Action(ActionType.T3, dpT3,2),
-                new Action(ActionType.P3, dpP3,2),
-                new Action(ActionType.T3, dpT3,2),
-                new Action(ActionType.L2, dpL2,1)
-            }, "Challenge2");
+                new Action(PinchType.T3, dpT3),
+                new Action(PinchType.T3, dpT3)
+
+            });
+            Challenge Challenge3 = new Challenge("Challenge3", new List<Action>()
+            {
+                new Action(PinchType.P2, dpP2),
+                new Action(PinchType.P2, dpP2)
+
+            });
+
+            Challenge Challenge4 = new Challenge("Challenge4", new List<Action>()
+            {
+                new Action(PinchType.P3, dpP3),
+                new Action(PinchType.P3, dpP3)
+
+            });
 
             Challenge1.PrintActions();
             Challenge2.PrintActions();
+            Challenge3.PrintActions();
+            Challenge4.PrintActions();
             // Create new challenges:
-            // First Round
-            //Console.WriteLine("\nRound 0\n");
-            //Challenge new1Chal = Algorithm.CreateNewChallenge(Challenge1, 10, 4);
-            //Challenge new2Chal = Algorithm.CreateNewChallenge(Challenge2, 10, 8);
+
             Challenge new1Chal = Challenge1;
             Challenge new2Chal = Challenge2;
-            //new1Chal.PrintActions();
-            //new2Chal.PrintActions();
+            Challenge new3Chal = Challenge3;
+            Challenge new4Chal = Challenge4;
+
             string stop = string.Empty;
             while (stop != "s")
             {
                 // Second Round
                 Console.WriteLine("\nRound " + counter++ + "\n");
-                //Console.WriteLine(new1Chal.Name + " CR:  " + new1Chal.CalculateCR(10, 5));
-                //Console.WriteLine(new2Chal.Name + " CR:  " + new2Chal.CalculateCR(10, 6));
 
-                new1Chal = Algorithm.CreateNewChallenge(new1Chal, 10, 3);
-                new2Chal = Algorithm.CreateNewChallenge(new2Chal, 10, 7);
+                new1Chal = Algorithm.CreateNewChallenge(new1Chal, 10, 1);
+                new2Chal = Algorithm.CreateNewChallenge(new2Chal, 10, 3);
+                new3Chal = Algorithm.CreateNewChallenge(new3Chal, 10, 6);
+                new4Chal = Algorithm.CreateNewChallenge(new4Chal, 10, 10);
 
                 new1Chal.PrintActions();
                 new2Chal.PrintActions();
+                new3Chal.PrintActions();
+                new4Chal.PrintActions();
                 List<Challenge> chromosomePool = Algorithm.SinglePointCrossover(new1Chal, new2Chal);// Maybe create as global "Chromosome Pool", for better selection inorder to do better CrossOver
+                chromosomePool.AddRange(Algorithm.SinglePointCrossover(new4Chal, new3Chal));
 
                 chromosomePool.Add(new1Chal);
                 chromosomePool.Add(new2Chal);
+                chromosomePool.Add(new3Chal);
+                chromosomePool.Add(new4Chal);
 
                 List<Challenge> nextLevel = Algorithm.SelectChromForNextLevel(chromosomePool);
                 new1Chal = nextLevel[0];
                 new2Chal = nextLevel[1];
+                new3Chal = nextLevel[2];
+                new4Chal = nextLevel[3];
+                Console.WriteLine("\nAfter Crossover and Selection:");
 
                 new1Chal.PrintActions();
                 new2Chal.PrintActions();
+                new3Chal.PrintActions();
+                new4Chal.PrintActions();
 
                 stop = Console.ReadLine();
             }
